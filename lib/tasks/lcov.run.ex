@@ -35,10 +35,13 @@ defmodule Mix.Tasks.Lcov.Run do
     File.rm(file_path)
 
     # Update config for current project on runtime
+    original_config = Mix.Project.config()
+    ignore_modules = if is_nil(original_config[:test_coverage]) do [] else original_config[:test_coverage][:ignore_modules] end
     config = [
       test_coverage: [
         tool: LcovEx,
         output: output,
+        ignore_modules: ignore_modules,
         ignore_paths: @ignored_paths,
         cwd: opts[:cwd],
         keep: opts[:keep]
@@ -46,7 +49,7 @@ defmodule Mix.Tasks.Lcov.Run do
     ]
 
     mix_path = Mix.Project.project_file()
-    new_config = Mix.Project.config() |> Keyword.merge(config)
+    new_config = original_config |> Keyword.merge(config)
     project = Mix.Project.get()
     Mix.ProjectStack.pop()
     Mix.ProjectStack.push(project, new_config, mix_path)
